@@ -65,7 +65,7 @@ class NeptuneLogger:
                 # Use tempfile correctly.
                 with tempfile.NamedTemporaryFile() as tmp:
                     dot.format = 'png'
-                    dot.render('torch-viz.png')
+                    dot.render(outfile='torch-viz.png')
                     self.run[self.base_namespace]['model']['visualization'].upload('torch-viz.png')
                 self._is_viz_saved = True
 
