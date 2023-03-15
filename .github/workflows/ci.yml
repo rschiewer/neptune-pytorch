@@ -1,4 +1,4 @@
-name: tensorflow-keras
+name: pytorch
 on: [push]
 jobs:
   pre-commit:

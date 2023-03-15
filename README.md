@@ -14,7 +14,7 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 * hyperparameters for every run,
 * learning curves for losses and metrics during training,
 * hardware consumption and stdout/stderr output during training,
-* TensorFlow tensors as images to see model predictions live,
+* PyTorch tensors as images to see model predictions live,
 * training code and Git commit information,
 * model weights,
 * [other metadata](https://docs.neptune.ai/logging/what_you_can_log)
@@ -25,9 +25,6 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 ## Resources
 
 * [Documentation](https://docs.neptune.ai/integrations/keras)
-* [Code example on GitHub](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/tensorflow-keras/scripts)
-* [Runs logged in the Neptune app](https://app.neptune.ai/o/common/org/tf-keras-integration/e/TFK-18/all)
-* [Run example in Google Colab](https://colab.research.google.com/github/neptune-ai/examples/blob/master/integrations-and-supported-tools/tensorflow-keras/notebooks/Neptune_TensorFlow_Keras.ipynb)
 
 ## Example
 
