@@ -12,7 +12,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        repository: neptune-ai/neptune-tensorflow-keras
+        repository: neptune-ai/neptune-pytorch
         path: ${{ inputs.working_directory }}
 
     - name: Install dependencies

@@ -1,4 +1,4 @@
-# Neptune + Keras integration
+# Neptune + PyTorch integration
 
 Experiment tracking, model registry, data versioning, and live model monitoring for Keras trained models.
 
@@ -34,33 +34,24 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 On the command line:
 
 ```
-pip install neptune-tensorflow-keras
+pip install neptune-pytorch neptune
 ```
 
 In Python:
 
 ```python
 import neptune
-from neptune.integrations.tensorflow_keras import NeptuneCallback
+from neptune.integrations.pytorch import NeptuneLogger
 from neptune import ANONYMOUS_API_TOKEN
 
 # Start a run
 run = neptune.init_run(
-    project="common/tf-keras-integration",
+    project="common/pytorch-integration",
     api_token=ANONYMOUS_API_TOKEN,
 )
 
 # Create a NeptuneCallback instance
-neptune_cbk = NeptuneCallback(run=run, base_namespace="metrics")
-
-# Pass the callback to model.fit()
-model.fit(
-    x_train,
-    y_train,
-    epochs=5,
-    batch_size=64,
-    callbacks=[neptune_cbk],
-)
+neptune_logger = NeptuneLogger(run=run, base_namespace="training")
 
 # Stop the run
 run.stop()
