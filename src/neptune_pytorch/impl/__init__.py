@@ -51,31 +51,32 @@ class NeptuneLogger:
         self._vis_hook_handler = None
         if log_model_diagram:
             self.run[self._base_namespace]["model"]["summary"] = str(model)
-            self.maybe_add_visualization_hook()
+            self.add_visualization_hook()
 
         self.log_gradients = log_gradients
         self._gradients_iter_tracker = {}
         self._gradients_hook_handler = {}
-        self.maybe_add_hooks_for_grads()
+        if self.log_gradients:
+            self.add_hooks_for_grads()
 
         self.log_parameters = log_parameters
         self._params_iter_tracker = 0
         self._params_hook_handler = None
-        self.maybe_add_hooks_for_params()
+        if self.log_parameters:
+            self.add_hooks_for_params()
 
-    def maybe_add_hooks_for_grads(self):
-        if self.log_gradients:
-            for name, parameter in self.model.named_parameters():
-                self._gradients_iter_tracker[name] = 0
+    def add_hooks_for_grads(self):
+        for name, parameter in self.model.named_parameters():
+            self._gradients_iter_tracker[name] = 0
 
-                def hook(grad, name=name):
-                    self._gradients_iter_tracker[name] += 1
-                    if self._gradients_iter_tracker[name] % self.log_freq == 0:
-                        self.run[self.base_namespace]["plots"]["gradients"][name].append(grad.norm())
+            def hook(grad, name=name):
+                self._gradients_iter_tracker[name] += 1
+                if self._gradients_iter_tracker[name] % self.log_freq == 0:
+                    self.run[self.base_namespace]["plots"]["gradients"][name].append(grad.norm())
 
-                self._gradients_hook_handler[name] = parameter.register_hook(hook)
+            self._gradients_hook_handler[name] = parameter.register_hook(hook)
 
-    def maybe_add_visualization_hook(self):
+    def add_visualization_hook(self):
         if not IS_TORCHVIZ_AVAILABLE:
             # Correctly print warning.
             print("WARNING")
@@ -92,16 +93,14 @@ class NeptuneLogger:
 
         self._vis_hook_handler = self.model.register_forward_hook(hook)
 
-    def maybe_add_hooks_for_params(self):
-        if self.log_parameters:
+    def add_hooks_for_params(self):
+        def hook(module, inp, output):
+            self._params_iter_tracker += 1
+            if self._params_iter_tracker % self.log_freq == 0:
+                for name, param in module.named_parameters():
+                    self.run[self.base_namespace]["plots"]["parameters"][name].append(param.norm())
 
-            def hook(module, inp, output):
-                self._params_iter_tracker += 1
-                if self._params_iter_tracker % self.log_freq == 0:
-                    for name, param in module.named_parameters():
-                        self.run[self.base_namespace]["plots"]["parameters"][name].append(param.norm())
-
-            self._params_hook_handler = self.model.register_forward_hook(hook)
+        self._params_hook_handler = self.model.register_forward_hook(hook)
 
     @property
     def base_namespace(self):
@@ -109,17 +108,21 @@ class NeptuneLogger:
 
     def save_model(self, model_name: Optional[str] = None):
         if model_name is None:
+            # Default model name
             model_name = "model.pt"
         else:
+            # User is not expected to add extension
             model_name = model_name + ".pt"
         torch.save(self.model.state_dict(), model_name)
         self.run[self._base_namespace]["model"][model_name].upload(model_name)
 
     def save_checkpoint(self, checkpoint_name: Optional[str] = None):
         if checkpoint_name is None:
+            # Default checkpoint name
             checkpoint_name = f"checkpoint_{self.ckpt_number}.pt"
             self.ckpt_number += 1
         else:
+            # User is not expected to add extension
             checkpoint_name = checkpoint_name + ".pt"
         torch.save(self.model.state_dict(), checkpoint_name)
         self.run[self._base_namespace]["model"][checkpoint_name].upload(checkpoint_name)
