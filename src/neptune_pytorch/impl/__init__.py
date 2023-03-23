@@ -51,6 +51,44 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-pytorch"
 
 
 class NeptuneLogger:
+    """Captures model training metadata and logs them to Neptune.
+
+    Note: To use this module, you need to have PyTorch installed.
+
+    Args:
+        run: Neptune run object. You can also pass a namespace handler object;
+            for example, run["test"], in which case all metadata is logged under
+            the "test" namespace inside the run.
+        base_namespace: Namespace where all metadata logged by the callback is stored.
+        log_gradients: Whether to track the frobenius-order norm of the gradients.
+        log_parameters: Whether to track the frobenius-order norm of the parameters.
+        log_freq: How often to log the parameters/gradients norm. Applicable only
+            if `log_parameters` or `log_gradients` is True.
+        log_model_diagram: Whether to save the model visualization.
+            Requires torchviz to be installed: https://pypi.org/project/torchviz/
+
+    Example:
+        import neptune
+        from neptune.integrations.pytorch import NeptuneLogger
+        run = neptune.init_run()
+        neptune_callback = NeptuneLogger(run=run, model=model)
+
+        for epoch in range(1, 4):
+            model.train()
+            for batch_idx, (data, target) in enumerate(train_loader):
+                data, target = data.to(device), target.to(device)
+                optimizer.zero_grad()
+                output = model(data)
+                loss = F.nll_loss(output, target)
+
+                loss.backward()
+                optimizer.step()
+
+    For more, see the docs:
+        Tutorial: https://docs.neptune.ai/integrations/pytorch/
+        API reference: https://docs.neptune.ai/api/integrations/pytorch/
+    """
+
     def __init__(
         self,
         run: Union[Run, Handler],
@@ -89,6 +127,13 @@ class NeptuneLogger:
         self._params_hook_handler = None
         if self.log_parameters:
             self.add_hooks_for_params()
+
+        # Log integration version
+        root_obj = self.run
+        if isinstance(self.run, Handler):
+            root_obj = self.run.get_root_obj()
+
+        root_obj[INTEGRATION_VERSION_KEY] = __version__
 
     def add_hooks_for_grads(self):
         for name, parameter in self.model.named_parameters():
