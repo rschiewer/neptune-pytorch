@@ -13,13 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["__version__", "NeptuneCallback"]
+__all__ = ["__version__", "NeptuneLogger"]
 
-from typing import Optional
+from typing import (
+    Optional,
+    Union,
+)
 
 import torch
 
 from neptune_pytorch.impl.version import __version__
+
+try:
+    # neptune-client>=1.0.0 package structure
+    from neptune import Run
+    from neptune.handlers import Handler
+    from neptune.integrations.utils import (
+        expect_not_an_experiment,
+        verify_type,
+    )
+except ImportError:
+    # neptune-client=0.9.0+ package structure
+    from neptune.new import Run
+    from neptune.new.handlers import Handler
+    from neptune.new.integrations.utils import (
+        expect_not_an_experiment,
+        verify_type,
+    )
 
 IS_TORCHVIZ_AVAILABLE = True
 try:
@@ -27,11 +47,13 @@ try:
 except ImportError:
     IS_TORCHVIZ_AVAILABLE = False
 
+INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-pytorch"
+
 
 class NeptuneLogger:
     def __init__(
         self,
-        run,
+        run: Union[Run, Handler],
         *,
         model,
         base_namespace="training",
@@ -40,6 +62,9 @@ class NeptuneLogger:
         log_parameters: bool = False,
         log_freq: int = 100,
     ):
+        expect_not_an_experiment(run)
+        verify_type("run", run, (Run, Handler))
+
         self.run = run
         self.model = model
         self._base_namespace = base_namespace
