@@ -24,7 +24,7 @@ Experiment tracking, model registry, data versioning, and live model monitoring 
 
 ## Resources
 
-* [Documentation](https://docs.neptune.ai/integrations/keras)
+* [Documentation](https://docs.neptune.ai/integrations/pytorch)
 
 ## Example
 
