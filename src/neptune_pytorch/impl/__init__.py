@@ -27,19 +27,13 @@ from neptune_pytorch.impl.version import __version__
 try:
     # neptune-client>=1.0.0 package structure
     from neptune import Run
-    from neptune.handlers import Handler
-    from neptune.integrations.utils import (
-        expect_not_an_experiment,
-        verify_type,
-    )
+    from neptune.handler import Handler
+    from neptune.internal.utils import verify_type
 except ImportError:
     # neptune-client=0.9.0+ package structure
     from neptune.new import Run
-    from neptune.new.handlers import Handler
-    from neptune.new.integrations.utils import (
-        expect_not_an_experiment,
-        verify_type,
-    )
+    from neptune.new.handler import Handler
+    from neptune.new.integrations.utils import verify_type
 
 IS_TORCHVIZ_AVAILABLE = True
 try:
@@ -100,7 +94,6 @@ class NeptuneLogger:
         log_parameters: bool = False,
         log_freq: int = 100,
     ):
-        expect_not_an_experiment(run)
         verify_type("run", run, (Run, Handler))
 
         self.run = run
