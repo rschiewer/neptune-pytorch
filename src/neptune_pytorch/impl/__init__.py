@@ -30,7 +30,6 @@ try:
     from neptune.handler import Handler
     from neptune.internal.utils import verify_type
 except ImportError:
-    # neptune-client=0.9.0+ package structure
     from neptune.new import Run
     from neptune.new.handler import Handler
     from neptune.new.integrations.utils import verify_type
@@ -46,8 +45,6 @@ INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-pytorch"
 
 class NeptuneLogger:
     """Captures model training metadata and logs them to Neptune.
-
-    Note: To use this module, you need to have PyTorch installed.
 
     Args:
         run: Neptune run object. You can also pass a namespace handler object;
