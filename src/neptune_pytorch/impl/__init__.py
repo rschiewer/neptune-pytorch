@@ -15,6 +15,8 @@
 #
 __all__ = ["__version__", "NeptuneLogger"]
 
+import os
+import weakref
 from typing import (
     Optional,
     Union,
@@ -29,10 +31,12 @@ try:
     from neptune import Run
     from neptune.handler import Handler
     from neptune.internal.utils import verify_type
+    from neptune.types import File
 except ImportError:
     from neptune.new import Run
     from neptune.new.handler import Handler
     from neptune.new.integrations.utils import verify_type
+    from neptune.new.types import File
 
 IS_TORCHVIZ_AVAILABLE = True
 try:
@@ -173,8 +177,9 @@ class NeptuneLogger:
         else:
             # User is not expected to add extension
             model_name = model_name + ".pt"
-        torch.save(self.model.state_dict(), model_name)
-        self.run[self._base_namespace]["model"][model_name].upload(model_name)
+        # torch.save(self.model.state_dict(), model_name)
+        # self.run[self._base_namespace]["model"][model_name].upload(model_name)
+        safe_upload(self.run[self._base_namespace]["model"], model_name, self.model)
 
     def save_checkpoint(self, checkpoint_name: Optional[str] = None):
         if checkpoint_name is None:
@@ -184,8 +189,8 @@ class NeptuneLogger:
         else:
             # User is not expected to add extension
             checkpoint_name = checkpoint_name + ".pt"
-        torch.save(self.model.state_dict(), checkpoint_name)
-        self.run[self._base_namespace]["model"][checkpoint_name].upload(checkpoint_name)
+
+        safe_upload(self.run[self._base_namespace]["model"], checkpoint_name, self.model)
 
     def __del__(self):
         # Remove hooks
@@ -198,3 +203,19 @@ class NeptuneLogger:
 
         if self._vis_hook_handler is not None:
             self._vis_hook_handler.remove()
+
+
+def safe_upload(run, name, model):
+    # Function to safely upload a file and
+    # delete the file on completion of upload.
+    # We utilise the weakref.finalize to remove
+    # the file once the stream object goes out-of-scope.
+
+    torch.save(model.state_dict(), name)
+
+    def remove(file_name):
+        os.remove(file_name)
+
+    with open(name, "rb") as f:
+        weakref.finalize(f, remove, name)
+        run[name].upload(File.from_stream(f))
