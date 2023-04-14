@@ -144,7 +144,8 @@ class NeptuneLogger:
 
     def add_visualization_hook(self):
         if not IS_TORCHVIZ_AVAILABLE:
-            warnings.warn("torchviz is not installed, skipping model visualization.")
+            msg = "Skipping model visualization because no torchviz installation was found."
+            warnings.warn(msg)
             return
 
         def hook(module, input, output):
