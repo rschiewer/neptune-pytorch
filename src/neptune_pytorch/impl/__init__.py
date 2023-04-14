@@ -16,6 +16,7 @@
 __all__ = ["__version__", "NeptuneLogger"]
 
 import os
+import warnings
 import weakref
 from typing import (
     Optional,
@@ -103,6 +104,7 @@ class NeptuneLogger:
         self.log_model_diagram = log_model_diagram
         self.ckpt_number = 1
         self.log_freq = log_freq
+        self._namespace_handler = self.run[base_namespace]
 
         self._is_viz_saved = False
         self._vis_hook_handler = None
@@ -136,14 +138,13 @@ class NeptuneLogger:
             def hook(grad, name=name):
                 self._gradients_iter_tracker[name] += 1
                 if self._gradients_iter_tracker[name] % self.log_freq == 0:
-                    self.run[self.base_namespace]["plots"]["gradients"][name].append(grad.norm())
+                    self._namespace_handler["plots"]["gradients"][name].append(grad.norm())
 
             self._gradients_hook_handler[name] = parameter.register_hook(hook)
 
     def add_visualization_hook(self):
         if not IS_TORCHVIZ_AVAILABLE:
-            # Correctly print warning.
-            print("WARNING")
+            warnings.warn("torchviz is not installed, skipping model visualization.")
             return
 
         def hook(module, input, output):
@@ -152,7 +153,7 @@ class NeptuneLogger:
                 # Use tempfile correctly.
                 dot.format = "png"
                 dot.render(outfile="torch-viz.png")
-                self.run[self.base_namespace]["model"]["visualization"].upload("torch-viz.png")
+                self._namespace_handler["model"]["visualization"].upload("torch-viz.png")
                 self._is_viz_saved = True
 
         self._vis_hook_handler = self.model.register_forward_hook(hook)
@@ -162,7 +163,7 @@ class NeptuneLogger:
             self._params_iter_tracker += 1
             if self._params_iter_tracker % self.log_freq == 0:
                 for name, param in module.named_parameters():
-                    self.run[self.base_namespace]["plots"]["parameters"][name].append(param.norm())
+                    self._namespace_handler["plots"]["parameters"][name].append(param.norm())
 
         self._params_hook_handler = self.model.register_forward_hook(hook)
 
@@ -177,9 +178,8 @@ class NeptuneLogger:
         else:
             # User is not expected to add extension
             model_name = model_name + ".pt"
-        # torch.save(self.model.state_dict(), model_name)
-        # self.run[self._base_namespace]["model"][model_name].upload(model_name)
-        safe_upload(self.run[self._base_namespace]["model"], model_name, self.model)
+
+        safe_upload(self._namespace_handler["model"], model_name, self.model)
 
     def save_checkpoint(self, checkpoint_name: Optional[str] = None):
         if checkpoint_name is None:
@@ -190,7 +190,7 @@ class NeptuneLogger:
             # User is not expected to add extension
             checkpoint_name = checkpoint_name + ".pt"
 
-        safe_upload(self.run[self._base_namespace]["model"], checkpoint_name, self.model)
+        safe_upload(self._namespace_handler["model"], checkpoint_name, self.model)
 
     def __del__(self):
         # Remove hooks
