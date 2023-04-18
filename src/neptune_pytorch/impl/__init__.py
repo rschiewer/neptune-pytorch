@@ -55,6 +55,7 @@ class NeptuneLogger:
         run: Neptune run object. You can also pass a namespace handler object;
             for example, run["test"], in which case all metadata is logged under
             the "test" namespace inside the run.
+        model: PyTorch model whose metadata will be tracked.
         base_namespace: Namespace where all metadata logged by the callback is stored.
         log_gradients: Whether to track the frobenius-order norm of the gradients.
         log_parameters: Whether to track the frobenius-order norm of the parameters.
@@ -89,7 +90,7 @@ class NeptuneLogger:
         self,
         run: Union[Run, Handler],
         *,
-        model,
+        model: torch.nn.Module,
         base_namespace="training",
         log_model_diagram: bool = False,
         log_gradients: bool = False,
