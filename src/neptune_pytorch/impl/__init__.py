@@ -210,8 +210,10 @@ class NeptuneLogger:
 
         if self._vis_hook_handler is not None:
             self._vis_hook_handler.remove()
-            os.remove("torch-viz.gv")
-            os.remove("torch-viz.png")
+            fn = "torch-viz.gv"
+            os.remove(fn) if os.path.exists(fn) else None
+            fn = "torch-viz.png"
+            os.remove(fn) if os.path.exists(fn) else None
 
 
 def safe_upload(run, name, model):
