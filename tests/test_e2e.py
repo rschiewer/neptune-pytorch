@@ -51,8 +51,8 @@ def test_e2e(model, dataset):
 
     run.wait()
     run.exists(f"{npt_logger.base_namespace}/batch/loss")
-    run.exists(f"{npt_logger.base_namespace}/model/checkpoint_1.pt")
-    run.exists(f"{npt_logger.base_namespace}/model/checkpoint_2.pt")
+    run.exists(f"{npt_logger.base_namespace}/model/checkpoints/checkpoint_1.pt")
+    run.exists(f"{npt_logger.base_namespace}/model/checkpoints/checkpoint_2.pt")
     run.exists(f"{npt_logger.base_namespace}/model/model.pt")
     run.exists(f"{npt_logger.base_namespace}/model/summary")
     run.exists(f"{npt_logger.base_namespace}/model/visualization")
