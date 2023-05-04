@@ -42,6 +42,7 @@ except ImportError:
 IS_TORCHVIZ_AVAILABLE = True
 try:
     import torchviz
+    from graphviz import ExecutableNotFound
 except ImportError:
     IS_TORCHVIZ_AVAILABLE = False
 
@@ -154,9 +155,13 @@ class NeptuneLogger:
                 dot = torchviz.make_dot(output, params=dict(module.named_parameters()))
                 # Use tempfile correctly.
                 dot.format = "png"
-                dot.render(outfile="torch-viz.png")
-                self._namespace_handler["model"]["visualization"].upload("torch-viz.png")
-                self._is_viz_saved = True
+                try:
+                    dot.render(outfile="torch-viz.png")
+                    self._namespace_handler["model"]["visualization"].upload("torch-viz.png")
+                except ExecutableNotFound:
+                    warnings.warn("Skipping model visualization because no dot installation was found.")
+                finally:
+                    self._is_viz_saved = True
 
         self._vis_hook_handler = self.model.register_forward_hook(hook)
 
@@ -205,6 +210,8 @@ class NeptuneLogger:
 
         if self._vis_hook_handler is not None:
             self._vis_hook_handler.remove()
+            os.remove("torch-viz.gv")
+            os.remove("torch-viz.png")
 
 
 def safe_upload(run, name, model):
