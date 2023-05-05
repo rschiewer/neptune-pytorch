@@ -202,7 +202,7 @@ class NeptuneLogger:
             # User is not expected to add extension
             checkpoint_name = checkpoint_name + ".pt"
 
-        safe_upload_model(self._namespace_handler["model"], checkpoint_name, self.model)
+        safe_upload_model(self._namespace_handler["model"]["checkpoints"], checkpoint_name, self.model)
 
     def __del__(self):
         # Remove hooks
