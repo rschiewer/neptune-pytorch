@@ -165,8 +165,8 @@ class NeptuneLogger:
                     # This errors because `dot` renderer is not found even
                     # if python binding of `graphviz` are available.
                     warnings.warn("Skipping model visualization because no dot (graphviz) installation was found.")
-                finally:
-                    self._is_viz_saved = True
+
+                self._is_viz_saved = True
 
         self._vis_hook_handler = self.model.register_forward_hook(hook)
 
@@ -217,7 +217,7 @@ class NeptuneLogger:
             self._vis_hook_handler.remove()
 
 
-def safe_upload_visualization(run, name, file_name):
+def safe_upload_visualization(run: Run, name: str, file_name: str):
     # Function to safely upload a file and
     # delete the file on completion of upload.
     # We utilise the weakref.finalize to remove
@@ -233,7 +233,7 @@ def safe_upload_visualization(run, name, file_name):
         run[name].upload(File.from_stream(f, extension="png"))
 
 
-def safe_upload_model(run, name, model):
+def safe_upload_model(run: Run, name: str, model: torch.nn.Module):
     # Function to safely upload a file and
     # delete the file on completion of upload.
     # We utilise the weakref.finalize to remove
