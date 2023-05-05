@@ -16,6 +16,7 @@
 __all__ = ["__version__", "NeptuneLogger"]
 
 import os
+import uuid
 import warnings
 import weakref
 from typing import (
@@ -42,6 +43,7 @@ except ImportError:
 IS_TORCHVIZ_AVAILABLE = True
 try:
     import torchviz
+    from graphviz import ExecutableNotFound
 except ImportError:
     IS_TORCHVIZ_AVAILABLE = False
 
@@ -152,10 +154,18 @@ class NeptuneLogger:
         def hook(module, input, output):
             if not self._is_viz_saved:
                 dot = torchviz.make_dot(output, params=dict(module.named_parameters()))
-                # Use tempfile correctly.
                 dot.format = "png"
-                dot.render(outfile="torch-viz.png")
-                self._namespace_handler["model"]["visualization"].upload("torch-viz.png")
+                # generate unique name so that multiple concurrent runs
+                # don't over-write each other.
+                viz_name = str(uuid.uuid4()) + ".png"
+                try:
+                    dot.render(outfile=viz_name)
+                    safe_upload_visualization(self._namespace_handler["model"], "visualization", viz_name)
+                except ExecutableNotFound:
+                    # This errors because `dot` renderer is not found even
+                    # if python binding of `graphviz` are available.
+                    warnings.warn("Skipping model visualization because no dot (graphviz) installation was found.")
+
                 self._is_viz_saved = True
 
         self._vis_hook_handler = self.model.register_forward_hook(hook)
@@ -181,7 +191,7 @@ class NeptuneLogger:
             # User is not expected to add extension
             model_name = model_name + ".pt"
 
-        safe_upload(self._namespace_handler["model"], model_name, self.model)
+        safe_upload_model(self._namespace_handler["model"], model_name, self.model)
 
     def save_checkpoint(self, checkpoint_name: Optional[str] = None):
         if checkpoint_name is None:
@@ -192,7 +202,7 @@ class NeptuneLogger:
             # User is not expected to add extension
             checkpoint_name = checkpoint_name + ".pt"
 
-        safe_upload(self._namespace_handler["model"]["checkpoints"], checkpoint_name, self.model)
+        safe_upload_model(self._namespace_handler["model"]["checkpoints"], checkpoint_name, self.model)
 
     def __del__(self):
         # Remove hooks
@@ -207,7 +217,23 @@ class NeptuneLogger:
             self._vis_hook_handler.remove()
 
 
-def safe_upload(run, name, model):
+def safe_upload_visualization(run: Run, name: str, file_name: str):
+    # Function to safely upload a file and
+    # delete the file on completion of upload.
+    # We utilise the weakref.finalize to remove
+    # the file once the stream object goes out-of-scope.
+
+    def remove(file_name):
+        os.remove(file_name)
+        # Also remove graphviz intermediate file.
+        os.remove(file_name.replace(".png", ".gv"))
+
+    with open(file_name, "rb") as f:
+        weakref.finalize(f, remove, file_name)
+        run[name].upload(File.from_stream(f, extension="png"))
+
+
+def safe_upload_model(run: Run, name: str, model: torch.nn.Module):
     # Function to safely upload a file and
     # delete the file on completion of upload.
     # We utilise the weakref.finalize to remove
