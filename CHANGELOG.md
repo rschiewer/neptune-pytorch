@@ -1,3 +1,8 @@
+## neptune-pytorch 1.0.1
+
+### Fixes
+- Make `torchviz` optional dependency. (https://github.com/neptune-ai/neptune-pytorch/pull/8)
+
 ## neptune-pytorch 1.0.0
 
 ### Fixes
