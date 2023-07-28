@@ -31,6 +31,7 @@ dev = [
     "pytest-cov",
     "pydot",
     "neptune",
+    "torchviz",
 ]
 
 [tool.poetry]
