@@ -44,10 +44,10 @@ def test_e2e(model, dataset):
 
             run[npt_logger.base_namespace]["batch/loss"].append(loss.item())
 
-        npt_logger.save_checkpoint()
+        npt_logger.log_checkpoint()
 
     # Save final model
-    npt_logger.save_model("model")
+    npt_logger.log_model("model")
 
     run.wait()
     run.exists(f"{npt_logger.base_namespace}/batch/loss")

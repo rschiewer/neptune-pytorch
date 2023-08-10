@@ -183,7 +183,7 @@ class NeptuneLogger:
     def base_namespace(self):
         return self._base_namespace
 
-    def save_model(self, model_name: Optional[str] = None):
+    def log_model(self, model_name: Optional[str] = None):
         if model_name is None:
             # Default model name
             model_name = "model.pt"
@@ -193,7 +193,7 @@ class NeptuneLogger:
 
         safe_upload_model(self._namespace_handler["model"], model_name, self.model)
 
-    def save_checkpoint(self, checkpoint_name: Optional[str] = None):
+    def log_checkpoint(self, checkpoint_name: Optional[str] = None):
         if checkpoint_name is None:
             # Default checkpoint name
             checkpoint_name = f"checkpoint_{self.ckpt_number}.pt"
