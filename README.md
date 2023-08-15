@@ -29,7 +29,7 @@ Experiment tracking for PyTorch-trained models.
 
 
 ```python
-from neptune.integrations.pytorch import NeptuneLogger
+from neptune_pytorch import NeptuneLogger
 
 run = neptune.init_run()
 neptune_callback = NeptuneLogger(run=run, model=model)
