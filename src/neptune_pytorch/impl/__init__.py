@@ -196,6 +196,10 @@ class NeptuneLogger:
             neptune_logger = NeptuneLogger()
             ...
             neptune_logger.log_model()
+
+        For more, see the docs:
+            Tutorial: https://docs.neptune.ai/integrations/pytorch/
+            API reference: https://docs.neptune.ai/api/integrations/pytorch/
         """
         if model_name is None:
             # Default model name
@@ -223,6 +227,10 @@ class NeptuneLogger:
             for epoch in range(parameters["epochs"]):
                 ...
                 neptune_logger.log_checkpoint()
+
+        For more, see the docs:
+            Tutorial: https://docs.neptune.ai/integrations/pytorch/
+            API reference: https://docs.neptune.ai/api/integrations/pytorch/
         """
         if checkpoint_name is None:
             # Default checkpoint name
