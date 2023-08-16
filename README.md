@@ -32,7 +32,14 @@ Experiment tracking for PyTorch-trained models.
 from neptune_pytorch import NeptuneLogger
 
 run = neptune.init_run()
-neptune_callback = NeptuneLogger(run=run, model=model)
+neptune_logger = NeptuneLogger(
+    run,
+    model=model,  # your torch Model()
+    log_model_diagram=True,
+    log_gradients=True,
+    log_parameters=True,
+    log_freq=30,
+)
 ```
 
 ## Support
