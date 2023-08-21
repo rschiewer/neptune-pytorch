@@ -184,6 +184,26 @@ class NeptuneLogger:
         return self._base_namespace
 
     def log_model(self, model_name: Optional[str] = None):
+        """Uploads the model to Neptune.
+
+        The model is saved in a namespace called "model" nested under the base namespace of the run, which is
+        "training" by default.
+
+        The filename is set to `model.pt` by default, but can be customized.
+
+        Args:
+            model_name: Name for the logged model file. The extension `.pt` is added automatically.
+
+        Example:
+            from neptune_pytorch import NeptuneLogger
+            neptune_logger = NeptuneLogger()
+            ...
+            neptune_logger.log_model()
+
+        For more, see the docs:
+            Tutorial: https://docs.neptune.ai/integrations/pytorch/
+            API reference: https://docs.neptune.ai/api/integrations/pytorch/
+        """
         if model_name is None:
             # Default model name
             model_name = "model.pt"
@@ -194,6 +214,30 @@ class NeptuneLogger:
         safe_upload_model(self._namespace_handler["model"], model_name, self.model)
 
     def log_checkpoint(self, checkpoint_name: Optional[str] = None):
+        """Uploads a model checkpoint to Neptune.
+
+        The checkpoint is saved in a namespace called "model/checkpoints" nested under the base namespace of the run,
+        which is "training" by default.
+
+        The filename is set to `checkpoint_<checkpoint number>.pt` by default, but can be customized.
+
+        Args:
+            checkpoint_name: Name for the logged checkpoint file.
+                If left empty, the checkpoint number used for the file name starts from 1 and is incremented
+                automatically on each call. The extension `.pt` is added automatically.
+
+        Example:
+            from neptune_pytorch import NeptuneLogger
+            neptune_logger = NeptuneLogger()
+            ...
+            for epoch in range(parameters["epochs"]):
+                ...
+                neptune_logger.log_checkpoint()
+
+        For more, see the docs:
+            Tutorial: https://docs.neptune.ai/integrations/pytorch/
+            API reference: https://docs.neptune.ai/api/integrations/pytorch/
+        """
         if checkpoint_name is None:
             # Default checkpoint name
             checkpoint_name = f"checkpoint_{self.ckpt_number}.pt"
